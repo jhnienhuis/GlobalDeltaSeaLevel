@@ -21,6 +21,7 @@ subfilt(isnan(subfilt)) = 0;
 out.DeltaSub = subfilt(sub2ind(size(subfilt),max(1,round(out.MouthLon*12)),round((90+out.MouthLat)*12)));
 
 %{
+blub
 %slr minus gia from past 50 years.
 %gia effect from http://icdc.cen.uni-hamburg.de/las/
 gia(:,:,1) = ncread('D:\GlobalDatasets\SeaLevelRise\9EAA985EE5D15A1A297A60B59C954B58_ferret_listing.nc','SELECTED_COMPONENTS'); %2100
