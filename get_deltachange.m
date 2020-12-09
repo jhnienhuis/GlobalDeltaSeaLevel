@@ -1,4 +1,4 @@
-function [ds,dr] = get_deltachange(qs,qs_sus,slr,s,r,beta,alpha,bed_h,fr)
+function [ds,dr] = get_deltachange(qs,qs_sus,slr,s,r,beta,alpha,psi,bed_h,fr)
 
 %do we need all of this? %assume profile is a reflection of the past 1000 years?
 
@@ -17,5 +17,5 @@ idx = (slr>0 & ds>0);
 ds(idx) = ((qs_tot(idx) - (s(idx)-r(idx)-dr(idx)).*slr(idx))./slr(idx)).*slr(idx)./(-bed_h(idx)+slr(idx));
 
 idx = (slr<=0);
-ds(idx) = -slr(idx)./alpha(idx) + qs_tot(idx)./(-bed_h(idx)+slr(idx));
+ds(idx) = -slr(idx)./psi(idx) + qs_tot(idx)./(-bed_h(idx)+slr(idx));
 

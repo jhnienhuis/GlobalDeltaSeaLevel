@@ -2,23 +2,37 @@ function create_netcdf(ncname,out,funits,fmeta)
 
 fnames = fieldnames(out);
 
-n = length(out.(fnames{1}));
-
-
 ncid = netcdf.create(ncname,'WRITE');
-% Define a dimension in the file.
-dimid = netcdf.defDim(ncid,'n',n);
+
+dim_a = netcdf.defDim(ncid,'n0',size(out.(fnames{1}),1));
+dim_b = netcdf.defDim(ncid,'n1',size(out.(fnames{1}),2));
+
 
 for ii=1:length(fnames),
     
-    if length(out.(fnames{ii}))~=n, continue, end
+    if isa(out.(fnames{ii}),'integer'),
+        out.(fnames{ii}) = int32(out.(fnames{ii}));
+        cla = 'NC_INT';
+    else,
+        cla = class(out.(fnames{ii}));
+    end
         
-    %nccreate(ncname,fnames{ii},'Dimensions',{'n',n})
     
+    if size(out.(fnames{ii}),1)==10848, 
+        dim1 = dim_a;
+    else,
+        dim1 = netcdf.defDim(ncid,['n' num2str(ii) '_1'],size(out.(fnames{ii}),1));
+    end
+    
+    if size(out.(fnames{ii}),2)==1, 
+        dim2 = dim_b;
+    else,
+        dim2 = netcdf.defDim(ncid,['n' num2str(ii) '_2'],size(out.(fnames{ii}),2));
+    end
+        
+    varid = netcdf.defVar(ncid,fnames{ii},cla,[dim1 dim2]);
+        
 
-    
-    % Define a new variable in the file.
-    varid = netcdf.defVar(ncid,fnames{ii},'double',dimid);
     
     %ncwrite(ncname,fnames{ii},out.(fnames{ii}))
     netcdf.endDef(ncid);

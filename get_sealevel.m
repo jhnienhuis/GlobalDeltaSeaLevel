@@ -14,14 +14,22 @@ lon = ncread([ff 'subs_global2000-2014.nc'],'lon');
 lon = lon([2161:end 1:2160]);
 
 subfilt = sub;
+
+%add a few for which there is no subsidence(?!)
+idx = [2824,5405]; %miss
+subidx = [1e-2,4e-3];
+idx = sub2ind(size(sub),max(1,round(out.MouthLon(idx)*12)),round((90+out.MouthLat(idx))*12));
+subfilt(idx) = subidx;
+
 subfilt(subfilt<1e-6) = nan;
 subfilt = nanconv(subfilt,ones(5)./25,'same');
 subfilt(isnan(subfilt)) = 0;
 
 out.DeltaSub = subfilt(sub2ind(size(subfilt),max(1,round(out.MouthLon*12)),round((90+out.MouthLat)*12)));
 
+out.DeltaSub([233,5390,4717,4789,6302,6473,2798,6598,5828,2681,3646,4397]) = [4e-3,1e-3,0.0028,0.001,0.032,1e-3,2e-3,1e-2,5e-3,1e-3,2e-3,5e-3];
+
 %{
-blub
 %slr minus gia from past 50 years.
 %gia effect from http://icdc.cen.uni-hamburg.de/las/
 gia(:,:,1) = ncread('D:\GlobalDatasets\SeaLevelRise\9EAA985EE5D15A1A297A60B59C954B58_ferret_listing.nc','SELECTED_COMPONENTS'); %2100
@@ -96,20 +104,7 @@ arrayfun(@(x) (ylim(x,[0 6000])),a)
 xlabel(a(1),'Rate (mm/yr)'),xlabel(a(2),'Rate (mm/yr)'),xlabel(a(3),'Rate (mm/yr)')
 
 
-m = axesm('MapProjection','Mercator','MapLonLimit', [0 360]);
-sub = movmax(movmax(subfilt,5,1),5,2);
-sl = (slr([181:end,1:180],:)'+sub([2173:12:end,1:12:2161],1:12:end)');
 
-map = flipud(cbrewer('div', 'RdYlBu', 64));
-map(28,:) = [1 1 1];
-blub = gray2ind(mat2gray(sl,[-0.01 0.01]));
-blub(blub==27) = 28;
-blub(isnan(sl)) = 27;
-
-RGB = ind2rgb(blub,map);
-g = geoshow(RGB,[1 90 360]);
-colormap(m,map);
-axis equal tight
 %}
 
 

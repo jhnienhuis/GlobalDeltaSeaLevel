@@ -1,5 +1,6 @@
 function get_deltadata
-load('D:\Dropbox\WorldDeltas\GlobalDeltaData.mat','Discharge_prist','QRiver_dist','QRiver_prist','channel_len','shelf_len','basin_depth');
+load('D:\Dropbox\WorldDeltas\scripts\GlobalDeltaData.mat','Discharge_prist','QRiver_dist','QRiver_prist','channel_len','MouthLat','MouthLon');
+load('D:\Dropbox\WorldDeltaLandArea\scripts\GlobalDeltaShelfProfile','shelf_len')
 
 %get delta profile
 beta = nan(size(channel_len,1),1);
@@ -7,54 +8,58 @@ alpha = beta;
 bed_h = beta;
 s = beta;
 r = beta;
-rab1 = beta;
-rab2 = beta;
-
+r_h=beta;
+psi = beta;
 fo_1 = fitoptions('poly2','Lower',[0,0,0],'Upper',[inf,inf,0]);
 fo_2 = fittype('poly2');
-
 for idx=1:length(s)
-    if mod(idx,100)==1, idx, end
-    [rab1(idx),rab2(idx),beta(idx),alpha(idx),s(idx),r(idx),bed_h(idx)] = get_deltaprofile(channel_len(idx,:),shelf_len(idx,:)*1000,fo_1,fo_2,0);
+    if mod(idx,100)==1, 
+        idx, 
+    end
+    
+    [beta(idx),alpha(idx),s(idx),r(idx),bed_h(idx),psi(idx),r_h(idx)] = get_deltaprofile(channel_len(idx,:),shelf_len(idx,:)*1000,fo_1,fo_2,0);
 end
-bed_h = min(basin_depth,bed_h);
+%bed_h = min(basin_depth,bed_h);
 
-
+%psi = (20./(1000*shelf_len(:,2)));
+%psi(isnan(psi)) = 0.01;
 %use syvitski/saito delta is a circle approach (width in m)
 w = 2*sqrt(1.07.*Discharge_prist.^1.1.*max(0.1,QRiver_prist).^0.45/pi./max(100,-bed_h)).*1000;
 
 %width approximation seems very reasonable? idx = cellfun(@(x) (find(BasinID==x,1)),delta_name_id); table(delta_name,w(idx)/1000)
 nu = 0.1 * 365*24*3600*Discharge_prist./w; %paola et al, %m2/yr %get nu from field data, way to undercontrained
 
-rab = (rab1+rab2)./2;
-
-
-idx = isnan(rab1);
-
+%{
+idx = isnan(alpha);
 [func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(beta(~idx)),'poly11');
 beta(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
 
 [func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(alpha(~idx)),'poly11');
 alpha(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
 
+[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(psi(~idx)),'poly11');
+psi(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
+
 [func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(max(0.01,-r(~idx))),'poly11');
 r(idx) = -10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
 
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(s(~idx)),'poly11');
+[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(max(0.01,s(~idx))),'poly11');
 s(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
 
 [func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(-bed_h(~idx)),'poly11');
 bed_h(idx) = -10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
+%}
 
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(max(0.01,rab(~idx))),'poly11');
-rab(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
+fr = -r./(s-r);
+rab = fr./(fr+(1-fr).^2);
+
 
 qs = rab.*nu.*beta;
 
 qs_sus = 365*24*3600*QRiver_dist./1600./w; %suspended flux per m coastline
 
-save GlobalDeltaProfile w qs_sus qs r s beta alpha bed_h rab
-
+save GlobalDeltaProfile psi w qs_sus qs r s beta alpha bed_h rab fr r_h
+%{
 %also save netcdf
 out = struct('alpha', alpha,'bed_h', bed_h,'beta', beta,'qs', qs ,'qs_sus', qs_sus,'r', r ,'rab', rab,'s', s,'w', w);
 
@@ -63,3 +68,4 @@ fmeta = {'delta surface slope at river mouth', 'Delta shoreface toe depth','Delt
     'Distance from delta center to alluvial-basement transition','Ratio of the alluvial to basement slope','Distance from delta center to the shoreline','Delta width'};
 create_netcdf('GlobalDeltaProfile.nc',out,funits,fmeta)
 
+%}
