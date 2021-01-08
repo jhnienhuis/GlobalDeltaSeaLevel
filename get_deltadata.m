@@ -1,6 +1,8 @@
 function get_deltadata
-load('D:\Dropbox\WorldDeltas\scripts\GlobalDeltaData.mat','Discharge_prist','QRiver_dist','QRiver_prist','channel_len','MouthLat','MouthLon');
-load('D:\Dropbox\WorldDeltaLandArea\scripts\GlobalDeltaShelfProfile','shelf_len')
+load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','Discharge_prist','QRiver_prist','channel_len');
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaShelfProfile.mat','shelf_len');
+%load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData_new.mat','shelf_len');
+%channel_len = channel_len(:,1:20);
 
 %get delta profile
 beta = nan(size(channel_len,1),1);
@@ -17,7 +19,7 @@ for idx=1:length(s)
         idx, 
     end
     
-    [beta(idx),alpha(idx),s(idx),r(idx),bed_h(idx),psi(idx),r_h(idx)] = get_deltaprofile(channel_len(idx,:),shelf_len(idx,:)*1000,fo_1,fo_2,0);
+    [beta(idx),alpha(idx),s(idx),r(idx),bed_h(idx),psi(idx),r_h(idx)] = get_deltaprofile(channel_len(idx,:),shelf_len(idx,:),fo_1,fo_2,0);
 end
 %bed_h = min(basin_depth,bed_h);
 
@@ -53,12 +55,15 @@ bed_h(idx) = -10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
 fr = -r./(s-r);
 rab = fr./(fr+(1-fr).^2);
 
-
 qs = rab.*nu.*beta;
 
-qs_sus = 365*24*3600*QRiver_dist./1600./w; %suspended flux per m coastline
+%qs_sus = 365*24*3600*QRiver_dist./1600./w; %suspended flux per m coastline
 
-save GlobalDeltaProfile psi w qs_sus qs r s beta alpha bed_h rab fr r_h
+
+
+
+
+save GlobalDeltaProfile psi w qs r s beta alpha bed_h rab fr r_h
 %{
 %also save netcdf
 out = struct('alpha', alpha,'bed_h', bed_h,'beta', beta,'qs', qs ,'qs_sus', qs_sus,'r', r ,'rab', rab,'s', s,'w', w);

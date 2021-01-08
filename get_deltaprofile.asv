@@ -1,17 +1,17 @@
 function [beta,alpha,s,r,bed_h,psi,r_h] = get_deltaprofile(l_x,shelf_x,fo_1,fo_2,pl)
 
 %old bathy
-sh1 = 1; sh2 = 2; shelf_h = -(0:20:400); shelf_x = shelf_x*1000;
+sh1 = 1; sh2 = 2; shelf_h = -(0:20:800);
 %new bathy
-%sh1 = 4; sh2 = 7; shelf_h = -(0:5:100);
+sh1 = 4; sh2 = 7; shelf_h = -(0:5:100);
 
 %get rid of first zeros (mouth height)
 x_nan = find(isnan(l_x),1); if isempty(x_nan), x_nan=length(l_x); end
 shore = find(l_x>0,1)-1; if shore==0, l_x = [0 l_x]; shore=1; end
 
 %if shelf_len doesn't exist, put in 1e-3
-s_nan = min(sh2,find(isnan(shelf_x),1)-1); 
-if isempty(s_nan), s_nan=sh2; elseif s_nan<sh2, s_nan=sh2; shelf_x = -shelf_h./1e-3; end
+s_nan = min(7,find(isnan(shelf_x),1)-1); 
+if isempty(s_nan), s_nan=7; elseif s_nan<7, s_nan=7; shelf_x = -shelf_h./1e-3; end
 
 
 
@@ -27,8 +27,8 @@ end
 l_x = l_x(shore(1):x_nan-1)';
 l_h = (0:length(l_x)-1)';
 
-shelf_x = shelf_x(sh1:s_nan);
-shelf_h = shelf_h(sh1:s_nan);
+shelf_x = shelf_x(4:s_nan);
+shelf_h = shelf_h(4:s_nan);
 
 %l_basement = coeffvalues(fit([fliplr(shelf_x)'; -l_x(end+(-4:0))],[fliplr(shelf_h)'; l_h(end+(-4:0))],'poly1'));
 sl = nan(2,length(l_h)-1);

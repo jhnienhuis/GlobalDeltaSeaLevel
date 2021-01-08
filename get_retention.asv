@@ -42,7 +42,7 @@ save('GlobalDeltaSedimentRetention.mat','-struct','out')
 
 out = rmfield(out,{'fr_f1','fr_f2','fr1','fr2'});
 
-
+mean(out.fr
 
 out.idx = double(out.idx);
 funits = {'dec deg','dec deg','','kg/s','ks/s','','',''};
