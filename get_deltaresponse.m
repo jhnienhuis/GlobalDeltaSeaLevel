@@ -1,7 +1,7 @@
 function get_deltaresponse
 load GlobalDeltaSeaLevelData
-load GlobalDeltaProfile
-load('D:\Dropbox\WorldDeltas\GlobalDeltaData.mat','QRiver_dist','Discharge_prist');
+load('GlobalDeltaProfile','alpha','beta','psi','s','r','qs','w','bed_h','rab')
+load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','Discharge_prist','delta_name');
 
 
 %yearly end-of-century SLR
@@ -16,14 +16,15 @@ SLRpred_unc = SLRpred;
 
 for jj=1:length(slr_scenarios),
     slr = eval(slr_scenarios{jj})+DeltaSub;
-    [ds,dr] = get_deltachange(qs,365*24*3600*QRiver_dist./1600./w,slr,s,r,beta,alpha,bed_h,1);
+    [ds,dr] = get_deltachange(qs,365*24*3600*QRiver_dist./1600./w,slr,s,r,beta,alpha,psi,bed_h,1);
     SLRpred(jj) = nansum(w.*ds./1e6);
     
-    land_area = get_deltachange_montecarlo(eval(slr_scenarios{jj}),eval(slr_unc_scenarios{jj}),w,DeltaSub,bed_h,QRiver_dist,Discharge_prist,rab,beta,s,r,alpha);
+    land_area = get_deltachange_montecarlo(QRiver_dist,Discharge_prist,eval(slr_scenarios{jj}),DeltaSub,eval(slr_unc_scenarios{jj}),s,r,beta,alpha,psi,bed_h,rab,w);
+  
     SLRpred_unc(jj) = std(sum(land_area,1)./1e6);
     
     out.(outcomes1{jj}) = w.*ds./1e6;
-    out.(outcomes2{jj}) = std(land_area,1,2)./1e6;
+    out.(outcomes2{jj}) = double(std(land_area,1,2)./1e6);
 end
 
 
@@ -36,18 +37,18 @@ outcomes2 = {'delta_change_RCP26_tot_std','delta_change_RCP45_tot_std','delta_ch
 
 SLRpred = zeros(size(slr_scenarios));
 SLRpred_unc = SLRpred;
-lt = length(ncread('D:\GlobalDatasets\SeaLevelRise\SROCC\rsl_ts_26.nc','time'));
+lt = length(ncread('D:\OneDrive - Universiteit Utrecht\SeaLevelRise\SROCC\rsl_ts_26.nc','time'));
 
 for jj=1:length(slr_scenarios),
     slr = eval(slr_scenarios{jj})+DeltaSub;
-    [ds,dr] = get_deltachange(qs,365*24*3600*QRiver_dist./1600./w,slr,s,r,beta,alpha,bed_h,1);
+    [ds,dr] = get_deltachange(qs,365*24*3600*QRiver_dist./1600./w,slr,s,r,beta,alpha,psi,bed_h,1);
     SLRpred(jj) = nansum(w.*ds./1e6).*lt;
     
-    land_area = get_deltachange_montecarlo(eval(slr_scenarios{jj}),eval(slr_unc_scenarios{jj}),w,DeltaSub,bed_h,QRiver_dist,Discharge_prist,rab,beta,s,r,alpha).*lt;
+    land_area = get_deltachange_montecarlo(QRiver_dist,Discharge_prist,eval(slr_scenarios{jj}),DeltaSub,eval(slr_unc_scenarios{jj}),s,r,beta,alpha,psi,bed_h,rab,w).*lt;
     SLRpred_unc(jj) = std(sum(land_area,1)./1e6);
     
     out.(outcomes1{jj}) = w.*ds./1e6.*lt;
-    out.(outcomes2{jj}) = std(land_area,1,2)./1e6;
+    out.(outcomes2{jj}) = double(std(land_area,1,2)./1e6);
     
 end
 

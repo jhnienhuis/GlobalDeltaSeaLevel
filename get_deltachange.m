@@ -7,15 +7,18 @@ dr = -slr./beta; %m retreat of alluvial bedrock transition
 
 qs_tot = qs_sus.*fr+qs;
 
-%how much do you expect based on profile?
-ds = (qs_tot - (s-r-dr).*slr)./slr;
+%is there transgression or regression?
+ds = (qs_tot - ((s-r-dr).*slr))./slr;
 
+%transgression
 idx = (slr>0 & ds<0);
 ds(idx) = max(ds(idx),max(-slr(idx)./max(1e-4,alpha(idx)),-(slr(idx)-bed_h(idx))./beta(idx)));
 
+%regression
 idx = (slr>0 & ds>0);
 ds(idx) = ((qs_tot(idx) - (s(idx)-r(idx)-dr(idx)).*slr(idx))./slr(idx)).*slr(idx)./(-bed_h(idx)+slr(idx));
 
 idx = (slr<=0);
 ds(idx) = -slr(idx)./psi(idx) + qs_tot(idx)./(-bed_h(idx)+slr(idx));
 
+end

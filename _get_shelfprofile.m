@@ -2,7 +2,7 @@ function get_shelfprofile
 %get continental shelf depth
 
 %load world bathymetry
-[Z, refvec] = etopo('D:\OneDrive - Universiteit Utrecht\GlobalDEM\',10,[-90 90]);
+[Z, refvec] = etopo('D:\OneDrive - Universiteit Utrecht\GlobalDEM\',5,[-90 90]);
 
 %hoy many km per cell latitude (simple!)
 kmperlatcell = deg2km(1)./refvec(1);

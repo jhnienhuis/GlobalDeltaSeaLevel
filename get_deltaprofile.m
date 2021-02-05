@@ -1,9 +1,7 @@
-function [beta,alpha,s,r,bed_h,psi,r_h] = get_deltaprofile(l_x,shelf_x,fo_1,fo_2,pl)
+function [beta,alpha,s,r,bed_h,psi,r_h] = get_deltaprofile(l_x,shelf_x,shelf_h,fo_1,fo_2,pl)
 
 %old bathy
-sh1 = 1; sh2 = 2; shelf_h = -(0:20:400); shelf_x = shelf_x*1000;
-%new bathy
-%sh1 = 4; sh2 = 7; shelf_h = -(0:5:100);
+sh1 = 1; sh2 = find(shelf_h<=-40,1);
 
 %get rid of first zeros (mouth height)
 x_nan = find(isnan(l_x),1); if isempty(x_nan), x_nan=length(l_x); end

@@ -1,4 +1,5 @@
-function land_area = get_deltachange_montecarlo(DeltaSLR,SLR_unc,w,DeltaSub,bed_h,QRiver_dist,Discharge_prist,rab,beta,s,r,alpha)
+function land_area = get_deltachange_montecarlo(QRiver_dist,Discharge_prist,DeltaSLR,DeltaSub,SLR_unc,s,r,beta,alpha,psi,bed_h,rab,w)
+
 land_area = zeros(length(beta),5000,'single');
 for ii=1:5000,
     DeltaSLR_r = DeltaSLR+(SLR_unc.*randn(numel(w),1)); %church et al 2004

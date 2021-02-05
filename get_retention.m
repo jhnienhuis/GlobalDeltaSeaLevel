@@ -7,8 +7,8 @@ ds_obs = out.ee.net_aqua./w*1e6; %observed shoreline change (m/yr)
 
 %inferred from gross delta shape (like syvitski and saito) topset is
 %created over 6000 years, so retained per year is volume/yr
-prof_inv_topset_f = @(x) ((s(x)-r(x)).*r_h(x)*0.5./6000);
-prof_inv_foreset_f = @(x) (s(x).*max(1,-bed_h(x)).*0.5./6000);
+prof_inv_topset_f = @(x) ((s(x)-r(x))./2.*r_h(x)./6000);
+prof_inv_foreset_f = @(x) (s(x).*max(1,-bed_h(x))./2./6000);
 
 %inferred topset deposition from delta growth and topset length
 %qs_inv_topset_ds_f = @(x) (s(x)-r(x)).*ds_obs(x).*alpha(x);
