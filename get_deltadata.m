@@ -1,5 +1,5 @@
 function get_deltadata
-load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','Discharge_prist','QRiver_prist','channel_len','shelf_len','shelf_lines','delta_name');
+load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','Discharge_prist','QRiver_prist','channel_len','shelf_len','shelf_lines','delta_name','shelf_depth','MouthLon','MouthLat','BasinID2');
 
 %get delta profile
 beta = nan(size(channel_len,1),1);
@@ -18,56 +18,29 @@ for idx=1:length(s)
     
     [beta(idx),alpha(idx),s(idx),r(idx),bed_h(idx),psi(idx),r_h(idx)] = get_deltaprofile(channel_len(idx,:),shelf_len(idx,:),shelf_lines,fo_1,fo_2,0);
 end
-%bed_h = min(basin_depth,bed_h);
 
-%psi = (20./(1000*shelf_len(:,2)));
-%psi(isnan(psi)) = 0.01;
-%use syvitski/saito delta is a circle approach (width in m)
-w = 2*sqrt(1.07.*Discharge_prist.^0.7.*max(0.1,QRiver_prist).^0.45/pi./100).*1000;
+delta_area_proxy = 1.07.*Discharge_prist.^1.1.*QRiver_prist.^0.45./max(100,-shelf_depth).*1e6; %delta area from syvitski2009
 
-%width approximation seems very reasonable? idx = cellfun(@(x) (find(BasinID==x,1)),delta_name_id); table(delta_name,w(idx)/1000)
-nu = 0.1 * 365*24*3600*Discharge_prist./w; %paola et al, %m2/yr %get nu from field data, way to undercontrained
+w = sqrt(delta_area_proxy./pi)*2;
 
-%{
-idx = isnan(alpha);
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(beta(~idx)),'poly11');
-beta(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
+%get data from edmonds et al., 2020
+[delta_area,delta_width,delta_length] = get_delta_area(Discharge_prist,QRiver_prist,delta_name,shelf_depth,MouthLon,MouthLat,BasinID2);
 
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(alpha(~idx)),'poly11');
-alpha(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
+corrcoef(w(~isnan(delta_width)),delta_width(~isnan(delta_width)))
+corrcoef(s(~isnan(delta_length)),delta_length(~isnan(delta_length)))
 
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(psi(~idx)),'poly11');
-psi(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
-
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(max(0.01,-r(~idx))),'poly11');
-r(idx) = -10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
-
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(max(0.01,s(~idx))),'poly11');
-s(idx) = 10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
-
-[func,gof] = fit([log10(Discharge_prist(~idx)),log10(QRiver_prist(~idx))],log10(-bed_h(~idx)),'poly11');
-bed_h(idx) = -10.^func(log10(Discharge_prist(idx)),log10(QRiver_prist(idx)));
-%}
-
-fr = -r./(s-r);
-rab = fr./(fr+(1-fr).^2);
-
-qs = rab.*nu.*beta;
-
-%qs_sus = 365*24*3600*QRiver_dist./1600./w; %suspended flux per m coastline
+w(~isnan(delta_width)) = delta_width(~isnan(delta_width));
+s(~isnan(delta_length)) = delta_length(~isnan(delta_length));
 
 
 
+save GlobalDeltaProfile psi w r s beta alpha bed_h r_h delta_area
 
-
-save GlobalDeltaProfile psi w qs r s beta alpha bed_h rab fr r_h
-%{
 %also save netcdf
-out = struct('alpha', alpha,'bed_h', bed_h,'beta', beta,'qs', qs ,'qs_sus', qs_sus,'r', r ,'rab', rab,'s', s,'w', w);
+out = struct('alpha', alpha,'beta', beta,'psi',psi,'r', r ,'s', s,'w', w,'bed_h', bed_h,'r_h',r_h,'delta_area',delta_area);
 
-funits = {'','m','','m2/yr','m2/yr','m','','m','m'};
-fmeta = {'delta surface slope at river mouth', 'Delta shoreface toe depth','Delta basement slope','Delta bedload flux','Delta suspended load flux',...
-    'Distance from delta center to alluvial-basement transition','Ratio of the alluvial to basement slope','Distance from delta center to the shoreline','Delta width'};
+funits = {'','','','m','m','m','m','m','m2'};
+fmeta = {'delta surface slope at river mouth', 'Delta basement slope','Delta foreset slope','Distance from delta center to alluvial-basement transition',...
+    'Distance from delta center to the shoreline','Delta width','basement depth at shoreline','elevation of the alluvial-bedrock transition','delta area'};
 create_netcdf('GlobalDeltaProfile.nc',out,funits,fmeta)
 
-%}

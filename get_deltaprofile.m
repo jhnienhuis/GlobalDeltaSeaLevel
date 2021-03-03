@@ -20,8 +20,6 @@ if max(l_x)==0 | x_nan<4 | (x_nan-shore)<5,
     return,
 end
 
-
-
 l_x = l_x(shore(1):x_nan-1)';
 l_h = (0:length(l_x)-1)';
 
@@ -64,10 +62,6 @@ else,
     psi = -(fliplr(shelf_x)'\fliplr(shelf_h)');
     %height of alluvial bedrock transition
     r_h = l_h(ii+1);
-    
-    %rab = fr./(fr+(1-fr)^2);
-    
-    
     
 end
 
