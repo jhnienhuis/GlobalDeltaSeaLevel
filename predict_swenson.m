@@ -53,3 +53,7 @@ v0 = out.Discharge_tide./(out.width_mouth.*out.depth_mouth);
 q_wf = out.Discharge_prist./out.width_upstream;
 
 hb_star = hb(out.Tp,out.Hs)./(psi.*10000);
+
+
+Qwave_off = delta_width.*(16/3/pi).*0.625*Cfs.*e_ss./g.*Is.*(
+

@@ -1,11 +1,12 @@
 function get_sealevel
 %% add slr to deltas, including projections and subsidence
-out = load('D:\Dropbox\WorldDeltas\GlobalDeltaData.mat','MouthLon','MouthLat','BasinID');
-out.MouthLon(out.MouthLon>360) = out.MouthLon(out.MouthLon>360)-360;
+out = load(['D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat'],'MouthLon','MouthLat','BasinID2','delta_name');
+out.MouthLon(out.MouthLon>180) = out.MouthLon(out.MouthLon>180)-360;
 CoorImDelta = out.MouthLat + 1i*out.MouthLon;
 ff = 'D:\OneDrive - Universiteit Utrecht\SeaLevelRise\';
 
-%subsidence (%m/yr)
+%{ 
+subsidence (%m/yr) from erkens
 sub = ncread([ff 'subs_global2000-2014.nc'],'subsidence');
 sub = (sub(:,:,end)-sub(:,:,1))./14; %m/yr
 sub = sub([2161:end 1:2160],end:-1:1);
@@ -28,6 +29,31 @@ subfilt(isnan(subfilt)) = 0;
 out.DeltaSub = subfilt(sub2ind(size(subfilt),max(1,round(out.MouthLon*12)),round((90+out.MouthLat)*12)));
 
 out.DeltaSub([233,5390,4717,4789,6302,6473,2798,6598,5828,2681,3646,4397]) = [4e-3,1e-3,0.0028,0.001,0.032,1e-3,2e-3,1e-2,5e-3,1e-3,2e-3,5e-3];
+%}
+
+load([ff 'Fig3_data_GPS_Subsidence.mat'],'Fig3_data');
+sub2 = max(-10,min(10,Fig3_data(:,5)))./1000;
+%scatter(Fig3_data(:,1),Fig3_data(:,2),30,sub2,'filled')
+
+CoorImSub = Fig3_data(:,2)+1i*(Fig3_data(:,1));
+
+%{
+wr = abs(CoorImSub-rot90(CoorImDelta))<2;
+out.DeltaSub = zeros(size(out.MouthLon));
+for ii=1:length(CoorImDelta),
+    if any(wr(:,ii)),
+        out.DeltaSub(ii) = mean(-sub2(wr(:,ii)));
+    else, 
+        out.DeltaSub(ii) = 0;
+    end
+end
+%}
+
+[b,idx] = min(abs(CoorImSub-rot90(CoorImDelta)));
+
+out.DeltaSub = -sub2(idx);
+out.DeltaSub(b>1) = 0; %don't include subsidence data where distance to station >2
+
 
 %{
 %slr minus gia from past 50 years.
@@ -58,8 +84,8 @@ out.DeltaSLR = slrsmooth(sub2ind(size(slrsmooth),max(1,round(out.MouthLon)),roun
 out.DeltaSLR = out.DeltaSLR(idx);
 %}
 
-SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'RECwithGIA','LRec');
-blub = permute(SLR.RECwithGIA(:,1020:end),[2 1]); %get 1985-2015
+SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'REC','LRec');
+blub = permute(SLR.REC(:,1020:end),[2 1]); %get 1985-2015
 s = size(blub);
 V = bsxfun(@power,(1:s(1))',0:1);
 blub = V*pinv(V)*reshape(blub,s(1),[]);
@@ -68,10 +94,10 @@ slr = ((blub(2,:)-blub(1,:))*12/1e3)'; %change to m/yr
 
 %add hudson bay -10mm/yr and caspian sea = 2mm/yr (1985-2015)
 %(https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2017GL073958)
-slr(end+(1:2)) = [-0.01 0.002];
-SLR.LRec(end+(1:2),:) = [-85 60;51 41];
+%slr(end+(1:2)) = [-0.01 0.002];
+%SLR.LRec(end+(1:2),:) = [-85 60;51 41];
 
-CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1),360));
+CoorImSLR = SLR.LRec(:,2)+1i*SLR.LRec(:,1);
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
 out.DeltaSLR = slr(idx);
@@ -108,10 +134,10 @@ xlabel(a(1),'Rate (mm/yr)'),xlabel(a(2),'Rate (mm/yr)'),xlabel(a(3),'Rate (mm/yr
 %}
 
 
-save GlobalDeltaSeaLevelData -struct out
+save('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData','-struct','out');
 
 funits = {'dec deg','dec deg','','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr'};
-fmeta = {'Delta location','Delta location','Basin ID from hydrosheds','Delta subsidence 2000-2014, doi:10.5194/piahs-372-83-2015',...
+fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds','Delta vertical land movement, doi:10.5194/piahs-372-83-2015',...
     'Delta sea-level rise 1985-2015, https://www.nature.com/articles/s41558-019-0531-8',...
     'Delta sea-level rise RCP 2.6, 2081-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 2.6, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
@@ -125,8 +151,8 @@ fmeta = {'Delta location','Delta location','Basin ID from hydrosheds','Delta sub
     'Delta sea-level rise RCP 8.5, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, lower bound, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, upper bound, http://icdc.cen.uni-hamburg.de/las/'};
-
-create_netcdf('GlobalDeltaSeaLevelData.nc',out,funits,fmeta)
+out = rmfield(out,'delta_name');
+create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData',out,funits,fmeta)
 
 end
 function [DeltaSLR_RCP_2100,DeltaSLR_RCP_tot,DeltaSLR_RCP_low,DeltaSLR_RCP_high] = get_slr_from_source(f,MouthLon,MouthLat,CoorImDelta);

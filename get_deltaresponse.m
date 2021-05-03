@@ -11,15 +11,16 @@ slr_unc_scenarios =  {'3e-4.*ones(size(w))','DeltaSLR_RCP26_high','DeltaSLR_RCP4
 outcomes1 = {'delta_change_1985_2015','delta_change_RCP26_2100','delta_change_RCP45_2100','delta_change_RCP85_2100'};
 outcomes2 = {'delta_change_1985_2015_std','delta_change_RCP26_2100_std','delta_change_RCP45_2100_std','delta_change_RCP85_2100_std'};
 
+ff = 365*24*3600/1600;
 
 %remove caspian sea and other non deltas
-[~,idx] = get_deltachange(365*24*3600*QRiver_dist./1600,DeltaSLR+DeltaSub,s,r,w,bed_h,0.9);
+[~,idx] = get_deltachange(ff.*QRiver_dist,DeltaSLR+DeltaSub,s,r,w,bed_h,0.9);
 out.idx= idx & ~(MouthLon>46 & MouthLon<56 & MouthLat>34 & MouthLat<48);
 
 
 for jj=1:length(slr_scenarios),
     slr = eval(slr_scenarios{jj})+DeltaSub;
-    dA = get_deltachange(365*24*3600*QRiver_dist./1600,slr,s,r,w,bed_h,0.9);
+    dA = get_deltachange(ff.*QRiver_dist,slr,s,r,w,bed_h,0.9);
     dA(~out.idx) = nan;   
     dA_unc = get_deltachange_montecarlo(QRiver_dist,eval(slr_scenarios{jj}),DeltaSub,eval(slr_unc_scenarios{jj}),s,r,w,bed_h);
     dA_unc(~out.idx,:) = nan;
@@ -40,7 +41,7 @@ lt = length(ncread('D:\OneDrive - Universiteit Utrecht\SeaLevelRise\SROCC\rsl_ts
 
 for jj=1:length(slr_scenarios),
     slr = eval(slr_scenarios{jj})+DeltaSub;
-    dA = get_deltachange(365*24*3600*QRiver_dist./1600,slr,s,r,w,bed_h,0.9);
+    dA = get_deltachange(ff.*QRiver_dist,slr,s,r,w,bed_h,0.9);
     dA(~out.idx) = nan;   
     dA_unc = get_deltachange_montecarlo(QRiver_dist,eval(slr_scenarios{jj}),DeltaSub,eval(slr_unc_scenarios{jj}),s,r,w,bed_h);
     dA_unc(~out.idx,:) = nan;
