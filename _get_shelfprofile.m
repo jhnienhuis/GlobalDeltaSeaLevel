@@ -1,5 +1,5 @@
 function get_shelfprofile
-%get continental shelf depth
+%get continental shelf depth test
 
 %load world bathymetry
 [Z, refvec] = etopo('D:\OneDrive - Universiteit Utrecht\GlobalDEM\',5,[-90 90]);
