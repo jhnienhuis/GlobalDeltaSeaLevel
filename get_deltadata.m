@@ -1,5 +1,5 @@
 function get_deltadata
-load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','Discharge_prist','QRiver_prist','channel_len','shelf_len','shelf_lines','delta_name','shelf_depth','MouthLon','MouthLat','BasinID2');
+load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','Discharge_prist','QRiver_prist','channel_len','shelf_len','shelf_lines','delta_name','shelf_depth','MouthLon','MouthLat','BasinID2','depth_upstream');
 %get delta profile
 beta = nan(size(channel_len,1),1);
 alpha = beta;
@@ -18,6 +18,9 @@ for ii=1:length(s)
     
     [beta(ii),alpha(ii),s(ii),r(ii),bed_h(ii),psi(ii),r_h(ii),t(ii)] = get_deltaprofile(channel_len(ii,:),shelf_len(ii,:),shelf_lines,fo_1,fo_2,0);
 end
+
+%set sedimentary depth of delta wedge to be at least the channel depth
+bed_h = min(bed_h,-depth_upstream);
 
 %width
 delta_area = 1.07.*Discharge_prist.^1.1.*QRiver_prist.^0.45./max(50,-shelf_depth).*1e6; %delta area from syvitski2009

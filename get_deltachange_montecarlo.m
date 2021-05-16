@@ -1,7 +1,6 @@
 function land_area = get_deltachange_montecarlo(QRiver_dist,DeltaSLR,DeltaSub,SLR_unc,s,r,w,bed_h)
 
-%f_lin = @(x) (0.25+(1.5*rand(x,1)));
-f_mul = @(x) (10.^(-0.5+1*rand(x,1)));
+f_mul = @(x) (10.^(-0.7+1.4*rand(x,1)));
 
 land_area = nan(length(bed_h),2000,'single');
 len = numel(w);
@@ -20,7 +19,5 @@ for ii=1:2000,
         
 end
 
-%[~,idx] = get_deltachange(365*24*3600*QRiver_dist./1600,DeltaSub+DeltaSLR,s,r,w,bed_h);
-%land_area(~idx,:) = nan;
 
 end

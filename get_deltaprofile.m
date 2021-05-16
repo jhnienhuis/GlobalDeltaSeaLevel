@@ -48,7 +48,7 @@ else, %sedimentary wedge; get river delta values
     
     %get thickness of alluvial deposit under river mouth from mean of
     %global and local fit:
-    bed_h = mean([sl(1,ii),(l_h(ii)-(l_x(ii)*(l_delta(1)*2*l_x(ii)+l_delta(2))))]);
+    bed_h = min(-1,mean([sl(1,ii),(l_h(ii)-(l_x(ii)*(l_delta(1)*2*l_x(ii)+l_delta(2))))]));
     alpha = l_delta(2);
     s = max(1,min(l_x(ii),-bed_h/beta));
     r = min(0,-l_x(ii)+s);    

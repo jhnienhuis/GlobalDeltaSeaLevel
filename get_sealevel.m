@@ -52,7 +52,7 @@ end
 [b,idx] = min(abs(CoorImSub-rot90(CoorImDelta)));
 
 out.DeltaSub = -sub2(idx);
-out.DeltaSub(b>1) = 0; %don't include subsidence data where distance to station >2
+out.DeltaSub(b>1) = 0; %don't include subsidence data where distance to station >1
 
 
 %{
@@ -137,7 +137,7 @@ xlabel(a(1),'Rate (mm/yr)'),xlabel(a(2),'Rate (mm/yr)'),xlabel(a(3),'Rate (mm/yr
 save('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData','-struct','out');
 
 funits = {'dec deg','dec deg','','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr'};
-fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds','Delta vertical land movement, doi:10.5194/piahs-372-83-2015',...
+fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds','Delta vertical land movement, doi:10.1038/s43017-020-00115-x',...
     'Delta sea-level rise 1985-2015, https://www.nature.com/articles/s41558-019-0531-8',...
     'Delta sea-level rise RCP 2.6, 2081-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 2.6, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
@@ -152,7 +152,7 @@ fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds','Delta ve
     'Delta sea-level rise RCP 8.5, lower bound, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, upper bound, http://icdc.cen.uni-hamburg.de/las/'};
 out = rmfield(out,'delta_name');
-create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData',out,funits,fmeta)
+create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.nc',out,funits,fmeta)
 
 end
 function [DeltaSLR_RCP_2100,DeltaSLR_RCP_tot,DeltaSLR_RCP_low,DeltaSLR_RCP_high] = get_slr_from_source(f,MouthLon,MouthLat,CoorImDelta);
