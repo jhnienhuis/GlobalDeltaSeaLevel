@@ -1,6 +1,7 @@
 function [beta,alpha,s,r,bed_h,psi,r_h,t] = get_deltaprofile(l_x,shelf_x,shelf_h,fo_1,fo_2,pl)
 
-sh1 = find(shelf_h<=-10,1); sh2 = find(shelf_h<=-50,1);
+%sh1 = find(shelf_h<=-10,1); sh2 = find(shelf_h<=-50,1);
+sh1 = find(shelf_h<=-100,1); sh2 = find(shelf_h<=-120,1);
 
 %get rid of first zeros (mouth height)
 x_nan = find(isnan(l_x),1); if isempty(x_nan), x_nan=length(l_x); end
