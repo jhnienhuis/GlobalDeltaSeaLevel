@@ -1,57 +1,63 @@
-function [rab1,rab2,beta,alpha,s,r,bed_h] = get_deltaprofile(x,shelf_len,fo_1,fo_2,pl)
+function [beta,alpha,s,r,bed_h,psi,r_h,t] = get_deltaprofile(l_x,shelf_x,shelf_h,fo_1,fo_2,pl)
+
+%sh1 = find(shelf_h<=-10,1); sh2 = find(shelf_h<=-50,1);
+sh1 = find(shelf_h<=-100,1); sh2 = find(shelf_h<=-120,1);
 
 %get rid of first zeros (mouth height)
-l_nan = find(isnan(x),1);
-shore = find(x>0,1)-1;
+x_nan = find(isnan(l_x),1); if isempty(x_nan), x_nan=length(l_x); end
+shore = find(l_x>0,1)-1; if shore==0, l_x = [0 l_x]; shore=1; end
+
+%if shelf_len doesn't exist, put in 1e-3
+s_nan = min(sh2,find(isnan(shelf_x),1)-1); 
+if isempty(s_nan), s_nan=sh2; elseif s_nan<sh2, s_nan=sh2; shelf_x = -shelf_h./1e-3; end
 
 %estimate r, s and rab based on profile
-if max(x)==0 | l_nan<4 | (l_nan-shore)<5,
-    rab1 = nan; rab2 = nan; beta = nan; alpha = nan; s = nan; r = nan; bed_h = nan;
+if max(l_x)==0 | x_nan<4 | (x_nan-shore)<5,
+    beta = nan; alpha = nan; s = nan; r = nan; bed_h = nan; psi=nan; r_h=nan;, t=nan;
     return,
 end
 
-x = x(shore(1):l_nan-1)';
-l_h = (0:length(x)-1)';
-%fit 2nd degree polynomial
-l_fit = coeffvalues(fit(x,l_h,fo_2,fo_1));
-%get basement slope
-beta = l_fit(1)*2*x(end)+l_fit(2);
-%get depth of basement transition
-bed_h = -(beta*x(end))+polyval(l_fit,x(end));
+l_x = l_x(shore(1):x_nan-1)';
+l_h = (0:length(l_x)-1)';
 
-%fit another polynomial ont he first 5 values, if poor fit use polynomial
-%of all values
-[l_fit2,gof] = fit(x(1:5),l_h(1:5),fo_2,fo_1);
-if gof.adjrsquare<0.25 | (l_fit2.p1*x(end)^2+l_fit2.p2*x(end))>50, l_fit2 = l_fit;
-else, l_fit2 = coeffvalues(l_fit2);
+shelf_x = shelf_x(sh1:s_nan);
+shelf_h = shelf_h(sh1:s_nan);
+
+sl = nan(2,length(l_h)-1);
+for ii=2:length(l_h)-1,
+    sl(:,ii) = [ones(length(shelf_x)+1,1), [fliplr(shelf_x(2:end))'; -l_x(ii+(0:1))]]\[fliplr(shelf_h(2:end))'; l_h(ii+(0:1))];
 end
 
+[bed_h,ii] = min(sl(1,:));
 
-l_fit2(2) = min(l_fit2(2),beta);
-l_fit_y= polyval(l_fit2,x);
-s = -bed_h/beta;
-r = min(0,s-(beta-l_fit2(2))/2/l_fit2(1)); %maximum of same slope R, and intersect R
-in = -x(find(l_fit_y<(beta*x+bed_h),1))+s;
-if in>r, r = in; end
-
-
-rab1 = (l_fit2(1)*(s-r)+0.5*l_fit2(2))*2/beta; %always unity
-
-if r>-1 || -r>s , rab1 = 0; r = max(r,-s); end
-
-% offshore
-%
-%sea_fit = coeffvalues(fit(fliplr(-shelf_len(idx,1:3)*1000)',sea_h(4:6)','poly1',fo_2));
-%sea_fit = polyfit(fliplr(-shelf_len(idx,1:3)*1000),sea_h(4:6),1);
-
-%get rab based on delta gross shape
-l_toe = bed_h/(beta-(20/shelf_len(2)));
-if l_toe<0, l_toe = max(s+shelf_len(2),(bed_h+20)/beta); end %intersect w/ bathy
-
-fr = (-r./(s-r));
-rab2 = fr./(fr+(1-fr)*(l_toe./(l_toe-r)));
-
-alpha = (l_fit_y(2)-l_fit_y(1))./x(2);
+if bed_h>=0, %no sedimentary wedge
+    beta = -sl(2,ii);
+    alpha = beta;
+    s=1;
+    r=0;
+    bed_h=0;   
+    psi = -(fliplr(shelf_x)'\fliplr(shelf_h)');
+    r_h = 0;
+    t = shelf_x(3);
+else, %sedimentary wedge; get river delta values
+    
+    %fit 2nd degree polynomial
+    l_delta = coeffvalues(fit(l_x(1:(ii+1)),l_h(1:(ii+1)),fo_2,fo_1));
+    
+    %get basement slope from mean of local fit and global fit
+    beta = mean([-sl(2,ii),l_delta(1)*2*l_x(ii)+l_delta(2)]);
+    
+    %get thickness of alluvial deposit under river mouth from mean of
+    %global and local fit:
+    bed_h = min(-1,mean([sl(1,ii),(l_h(ii)-(l_x(ii)*(l_delta(1)*2*l_x(ii)+l_delta(2))))]));
+    alpha = l_delta(2);
+    s = max(1,min(l_x(ii),-bed_h/beta));
+    r = min(0,-l_x(ii)+s);    
+    psi = -(fliplr(shelf_x)'\fliplr(shelf_h)');
+    %height of alluvial bedrock transition
+    r_h = l_h(ii+1);
+    t = shelf_x(3); %-bed_h./(psi+sl(2,ii));
+end
 
 if pl == 1;
     disp(['r = ' num2str(r)])
@@ -62,15 +68,14 @@ if pl == 1;
     disp(['rab1 = ' num2str(rab1)])
     disp(['rab2 = ' num2str(rab2)])
     
-figure
-hold on
-grid on
-plot(-x,l_h,'ok')
-plot(-x,polyval(l_fit,x))
-plot(-x,l_fit_y,'g')
-plot(-x,beta*x+bed_h)
-plot(fliplr(shelf_len(1:6)),-100:20:0,'-ob')
-xlabel('Along-stream (m)')
-ylabel('Elevation (m)')
+    figure
+    hold on
+    grid on
+    plot(-l_x,l_h,'ok')
+    plot(shelf_x,shelf_h,'ob')
+    plot([fliplr(shelf_x(2:end))'; -l_x(ii+(0:1))],[fliplr(shelf_x(2:end))'; -l_x(ii+(0:1))].*sl(2,ii)+sl(1,ii));
+    plot(0:-1:-l_x(ii),polyval(l_delta,0:l_x(ii)))
+    xlabel('Along-stream (m)')
+    ylabel('Elevation (m)')
 end
-    %}
+%}
