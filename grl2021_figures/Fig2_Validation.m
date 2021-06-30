@@ -1,8 +1,8 @@
 clr
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QWave','QTide','QRiver_prist','delta_name','MouthLon','MouthLat','BasinID2','shelf_depth','Discharge_prist','depth_upstream');
 ee = load('D:\Dropbox\github\GlobalDeltaChange\land_area_change\GlobalDeltaData_AreaChange.mat');
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.mat','DeltaSLR','DeltaSub')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile.mat','bed_h','s','r','w','delta_area')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.mat','DeltaSLR','DeltaSub')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat','bed_h','s','r','w','delta_area')
 addpath('D:\Dropbox\github\GlobalDeltaSeaLevel\')
 addpath('D:\Dropbox\github\GlobalDeltaChange\')
 

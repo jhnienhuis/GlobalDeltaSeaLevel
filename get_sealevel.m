@@ -1,7 +1,7 @@
 function get_sealevel
 %% add slr to deltas, including projections and subsidence
 out = load(['D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat'],'MouthLon','MouthLat','BasinID2','delta_name');
-out.MouthLon(out.MouthLon>180) = out.MouthLon(out.MouthLon>180)-360;
+%out.MouthLon(out.MouthLon>180) = out.MouthLon(out.MouthLon>180)-360;
 CoorImDelta = out.MouthLat + 1i*out.MouthLon;
 ff = 'D:\OneDrive - Universiteit Utrecht\SeaLevelRise\';
 
@@ -34,8 +34,7 @@ out.DeltaSub([233,5390,4717,4789,6302,6473,2798,6598,5828,2681,3646,4397]) = [4e
 load([ff 'Fig3_data_GPS_Subsidence.mat'],'Fig3_data');
 sub2 = max(-10,min(10,Fig3_data(:,5)))./1000;
 %scatter(Fig3_data(:,1),Fig3_data(:,2),30,sub2,'filled')
-
-CoorImSub = Fig3_data(:,2)+1i*(Fig3_data(:,1));
+CoorImSub = Fig3_data(:,2)+1i*(mod(Fig3_data(:,1)-1,360)+1);
 
 %{
 wr = abs(CoorImSub-rot90(CoorImDelta))<2;
@@ -84,7 +83,7 @@ out.DeltaSLR = slrsmooth(sub2ind(size(slrsmooth),max(1,round(out.MouthLon)),roun
 out.DeltaSLR = out.DeltaSLR(idx);
 %}
 
-SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'REC','LRec');
+SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'REC','LRec','tTG');
 blub = permute(SLR.REC(:,1020:end),[2 1]); %get 1985-2015
 s = size(blub);
 V = bsxfun(@power,(1:s(1))',0:1);
@@ -97,23 +96,21 @@ slr = ((blub(2,:)-blub(1,:))*12/1e3)'; %change to m/yr
 %slr(end+(1:2)) = [-0.01 0.002];
 %SLR.LRec(end+(1:2),:) = [-85 60;51 41];
 
-CoorImSLR = SLR.LRec(:,2)+1i*SLR.LRec(:,1);
+CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1)-1,360)+1);
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
 out.DeltaSLR = slr(idx);
 
+out.DeltaSLR_series(1:length(idx),2:(length(SLR.tTG)/12)) = diff(SLR.REC(idx,1:12:end),1,2)/1e3;
+out.DeltaSLR_time = SLR.tTG(1:12:end)';
 
-f = ([ff 'SROCC\rsl_ts_26.nc']); %http://icdc.cen.uni-hamburg.de/las/
 
-[out.DeltaSLR_RCP26_2100,out.DeltaSLR_RCP26_tot,out.DeltaSLR_RCP26_low,out.DeltaSLR_RCP26_high] = get_slr_from_source(f,out.MouthLon,out.MouthLat,CoorImDelta);
-
-f = ([ff 'SROCC\rsl_ts_45.nc']); %http://icdc.cen.uni-hamburg.de/las/
-
-[out.DeltaSLR_RCP45_2100,out.DeltaSLR_RCP45_tot,out.DeltaSLR_RCP45_low,out.DeltaSLR_RCP45_high] = get_slr_from_source(f,out.MouthLon,out.MouthLat,CoorImDelta);
-
-f = ([ff 'SROCC\rsl_ts_85.nc']); %http://icdc.cen.uni-hamburg.de/las/
-
-[out.DeltaSLR_RCP85_2100,out.DeltaSLR_RCP85_tot,out.DeltaSLR_RCP85_low,out.DeltaSLR_RCP85_high] = get_slr_from_source(f,out.MouthLon,out.MouthLat,CoorImDelta);
+f = (['SROCC\rsl_ts_26.nc']); %http://icdc.cen.uni-hamburg.de/las/
+[out.DeltaSLR_RCP26_2100,out.DeltaSLR_RCP26_tot,out.DeltaSLR_RCP26_low,out.DeltaSLR_RCP26_high,out.DeltaSLR_RCP26_series,out.DeltaSLR_RCP_time] = get_slr_from_source(ff,f,CoorImDelta);
+f = (['SROCC\rsl_ts_45.nc']); %http://icdc.cen.uni-hamburg.de/las/
+[out.DeltaSLR_RCP45_2100,out.DeltaSLR_RCP45_tot,out.DeltaSLR_RCP45_low,out.DeltaSLR_RCP45_high,out.DeltaSLR_RCP45_series] = get_slr_from_source(ff,f,CoorImDelta);
+f = (['SROCC\rsl_ts_85.nc']); %http://icdc.cen.uni-hamburg.de/las/
+[out.DeltaSLR_RCP85_2100,out.DeltaSLR_RCP85_tot,out.DeltaSLR_RCP85_low,out.DeltaSLR_RCP85_high,out.DeltaSLR_RCP85_series] = get_slr_from_source(ff,f,CoorImDelta);
 
 %{
 a = tight_subplot(1,3,0.05); 
@@ -128,57 +125,68 @@ arrayfun(@(x) (box(x,'on')),a)
 arrayfun(@(x) (xlim(x,[-1.5e-2,+2e-2])),a)
 arrayfun(@(x) (ylim(x,[0 6000])),a)
 xlabel(a(1),'Rate (mm/yr)'),xlabel(a(2),'Rate (mm/yr)'),xlabel(a(3),'Rate (mm/yr)')
-
-
-
 %}
 
+%example timeseries
 
-save('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData','-struct','out');
+%plot(out.DeltaSLR_time,cumsum(-out.DeltaSLR_series(10000,:),2,'reverse'))
+%hold on
+%plot(out.DeltaSLR_RCP_time,cumsum(out.DeltaSLR_RCP26_series(10000,:)))
 
-funits = {'dec deg','dec deg','','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr'};
+save('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData','-struct','out');
+
+funits = {'dec deg','dec deg','','m/yr','m/yr','m/yr','yr','m/yr','m/yr','m/yr','m/yr','m/yr','yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr','m/yr'};
 fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds','Delta vertical land movement, doi:10.1038/s43017-020-00115-x',...
     'Delta sea-level rise 1985-2015, https://www.nature.com/articles/s41558-019-0531-8',...
+    'Delta sea-level rise yearly 1900-2015, https://www.nature.com/articles/s41558-019-0531-8',...
+    'Delta sea-level rise yearly time, https://www.nature.com/articles/s41558-019-0531-8',...
     'Delta sea-level rise RCP 2.6, 2081-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 2.6, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 2.6, lower bound, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 2.6, upper bound, http://icdc.cen.uni-hamburg.de/las/',...
+    'Delta sea-level rise RCP 2.6, yearly 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
+    'Delta sea-level rise RCP, yearly time, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 4.5, 2081-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 4.5, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 4.5, lower bound, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 4.5, upper bound, http://icdc.cen.uni-hamburg.de/las/',...
+    'Delta sea-level rise RCP 4.5, yearly 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, 2081-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, 2007-2100, http://icdc.cen.uni-hamburg.de/las/',...
     'Delta sea-level rise RCP 8.5, lower bound, http://icdc.cen.uni-hamburg.de/las/',...
-    'Delta sea-level rise RCP 8.5, upper bound, http://icdc.cen.uni-hamburg.de/las/'};
+    'Delta sea-level rise RCP 8.5, upper bound, http://icdc.cen.uni-hamburg.de/las/'...
+    'Delta sea-level rise RCP 8.5, yearly 2007-2100, http://icdc.cen.uni-hamburg.de/las/'};
 out = rmfield(out,'delta_name');
-create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.nc',out,funits,fmeta)
+create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.nc',out,funits,fmeta)
 
 end
-function [DeltaSLR_RCP_2100,DeltaSLR_RCP_tot,DeltaSLR_RCP_low,DeltaSLR_RCP_high] = get_slr_from_source(f,MouthLon,MouthLat,CoorImDelta);
+function [SLR_2100,SLR_tot,SLR_low,SLR_high,SLR_series,SLR_time] = get_slr_from_source(ff,f,CoorImDelta)
 
-slr = double(ncread(f,'slr_md')); %m/yr slr
-slr_high = double(ncread(f,'slr_he')); %m/yr slr
-slr_low = double(ncread(f,'slr_le')); %m/yr slr
+gia = ncread([ff 'SROCC\gia_mean.nc'],'rslrate'); %subtract GIA because it is in the VLM dataset
 
-DeltaSLR_RCP_2100 = (slr(:,:,end)-slr(:,:,(end-19)))./19;
-DeltaSLR_RCP_tot = (slr(:,:,end)-slr(:,:,1))./size(slr,3);
-DeltaSLR_RCP_high = (slr_high(:,:,end)-slr_high(:,:,1))./size(slr,3);
-DeltaSLR_RCP_low = (slr_low(:,:,end)-slr_low(:,:,1))./size(slr,3);
+SLRraw = permute(double(ncread([ff f],'slr_md')),[3 1 2]); %m
+SLRraw_high = permute(double(ncread([ff f],'slr_he')),[3 1 2]); %m slr
+SLRraw_low = permute(double(ncread([ff f],'slr_le')),[3 1 2]); %m slr
+SLR_time = ncread([ff f],'time')';
 
-DeltaSLR_RCP_2100 = DeltaSLR_RCP_2100(sub2ind(size(DeltaSLR_RCP_2100),max(1,round(MouthLon)),round((90+MouthLat))));
-DeltaSLR_RCP_tot = DeltaSLR_RCP_tot(sub2ind(size(DeltaSLR_RCP_tot),max(1,round(MouthLon)),round((90+MouthLat))));
-DeltaSLR_RCP_high = DeltaSLR_RCP_high(sub2ind(size(DeltaSLR_RCP_high),max(1,round(MouthLon)),round((90+MouthLat))));
-DeltaSLR_RCP_low = DeltaSLR_RCP_low(sub2ind(size(DeltaSLR_RCP_low),max(1,round(MouthLon)),round((90+MouthLat))));
+[Y,X] = meshgrid(ncread([ff f],'y'),ncread([ff f],'x'));
 
-[~,idx] = nanmin(abs(CoorImDelta-rot90(999i.*isnan(DeltaSLR_RCP_2100)+CoorImDelta)),[],2);
-DeltaSLR_RCP_2100 = DeltaSLR_RCP_2100(idx);
-DeltaSLR_RCP_tot = DeltaSLR_RCP_tot(idx);
-DeltaSLR_RCP_low = DeltaSLR_RCP_low(idx);
-DeltaSLR_RCP_high = DeltaSLR_RCP_high(idx);
+SLR_2100 = squeeze((SLRraw(end,:,:)-SLRraw(end-19,:,:))./19)-gia; %m/yr
+SLR_tot = squeeze((SLRraw(end,:,:)-SLRraw(1,:,:))./length(SLR_time))-gia; %m/yr
+SLR_high = squeeze((SLRraw_high(end,:,:)-SLRraw_high(1,:,:)))./length(SLR_time);
+SLR_low = squeeze((SLRraw_low(end,:,:)-SLRraw_low(1,:,:)))./length(SLR_time);
 
+ind_sea = find(~isnan(SLRraw(1,:,:)));
+CoorImSLR = Y(ind_sea)+1i.*X(ind_sea);
 
+[~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
+SLR_2100 = SLR_2100(idx)';
+SLR_tot = SLR_tot(idx)';
+SLR_low = SLR_low(idx)';
+SLR_high = SLR_high(idx)';
 
+SLR_series = diff(SLRraw(:,idx),1,1)';
+SLR_time(end) = [];
 
 end

@@ -2,11 +2,11 @@ function Fig3_LandAreaChange
 % continuous plot for SLR rates w/ pristine sediment, disturbed sediment, no sediment.
 clr
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QRiver_prist');
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile.mat','bed_h','w','r','s')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat','bed_h','w','r','s')
 addpath('D:\Dropbox\github\GlobalDeltaSeaLevel\')
 addpath('D:\Dropbox\github\GlobalDeltaChange\')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelResponse.mat')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.mat')
 
 
 subplot(1,4,1)
@@ -77,5 +77,5 @@ ylabel('Delta Land Change (2005-2100')
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-saveas(gcf,'Fig3_LandAreaChange.svg')
+%saveas(gcf,'Fig3_LandAreaChange.svg')
 

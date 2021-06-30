@@ -51,7 +51,7 @@ delta_area(ed_xx) = ed_area;
 
 %have calibrated values and they seem more or less fine. 
 
-save('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile','w','r','s','t','psi','beta','alpha','bed_h','r_h','delta_area');
+save('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','w','r','s','t','psi','beta','alpha','bed_h','r_h','delta_area');
 
 %also save netcdf
 out = struct('alpha', alpha,'beta', beta,'psi',psi,'r', r ,'s', s,'w', w,'bed_h', bed_h,'r_h',r_h,'delta_area',delta_area);
@@ -59,5 +59,5 @@ out = struct('alpha', alpha,'beta', beta,'psi',psi,'r', r ,'s', s,'w', w,'bed_h'
 funits = {'','','','m','m','m','m','m','m2'};
 fmeta = {'delta surface slope at river mouth', 'Delta basement slope','Delta foreset slope','Distance from delta center to alluvial-basement transition',...
     'Distance from delta center to the shoreline','Delta width','basement depth at shoreline','elevation of the alluvial-bedrock transition','delta area'};
-create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile.nc',out,funits,fmeta)
+create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.nc',out,funits,fmeta)
 
