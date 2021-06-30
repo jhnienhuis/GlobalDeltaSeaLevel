@@ -1,0 +1,29 @@
+# GlobalDeltaSeaLevel
+Model predictions of global delta land area response to sea-level rise
+
+This github repository contains code and datafiles to reproduce findings published in:
+Nienhuis & van de Wal, GRL 2021
+
+%% get_sealevel.m
+loads data from 
+- Past sea level rise (1900-2015): Dangendorf et al (Nature Clim. https://www.nature.com/articles/s41558-019-0531-8)
+- Future sea level rise (2007-2100): Oppenheimer et al (SROCC Ch. 4, https://www.ipcc.ch/srocc/)
+- Vertical land motion: Shirzaei et al (Nature Rev., https://www.nature.com/articles/s43017-020-00115-x)
+and matches it with global delta river mouths. 
+output: export_data/GlobalDeltaSeaLevelData
+
+%% get_deltadata.m
+this file loads cross-sectional profile information from SRTM15+ and extracts delta widths and lengths. It uses a subfunction called "get_deltaprofile.m".
+additional data is loaded from Edmonds et al., Nature Comm, https://www.nature.com/articles/s41467-020-18531-4. We use their length/width data to check/validate our automatic width extraction and also replace our automatically obtained values where possible
+output: export_data/GlobalDeltaProfile
+
+%% get_deltaresponse.m
+this file loads delta morphology from GlobalDeltaProfile and sea level changes from GlobalDeltaSeaLevelData to produce land area change estimates for global deltas
+it uses the function get_deltachange.m and get_deltachange_montecarlo for individual delta estimates incl uncertainty
+output: export_data/GlobalDeltaSeaLevelResponse
+
+%% export_data
+contains .mat and .nc files
+
+%% grl2021_figures
+contains scripts for the figures published in Nienhuis & van de Wal, GRL 2021
