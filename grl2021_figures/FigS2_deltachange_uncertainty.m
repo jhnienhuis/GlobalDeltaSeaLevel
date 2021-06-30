@@ -1,9 +1,9 @@
 %% sensitivity to delta width? medium
 clr
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QRiver_prist','delta_name');
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile.mat')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.mat')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelResponse.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse.mat')
 addpath('D:\Dropbox\github\GlobalDeltaSeaLevel\')
 w_r = (0.5:0.1:2).*w; land_pred = [];
 
@@ -62,4 +62,4 @@ legend('Delta Width','Delta Toe Depth','SLR','QRiver','Delta Length')
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-saveas(gcf,'FigS6_deltachange_uncertainty.svg')
+saveas(gcf,'FigS2_deltachange_uncertainty.svg')

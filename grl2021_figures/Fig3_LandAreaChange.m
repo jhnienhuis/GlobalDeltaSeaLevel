@@ -73,9 +73,9 @@ bar(SLRpred./1e6)
 hold on
 errorbar(SLRpred./1e6,SLRpred_unc./1e6)
 set(gca,'xticklabel',{'RCP26','RCP45','RCP85'})
-ylabel('Delta Land Change (2005-2100')
+ylabel('Delta Land Change (2007-2100)')
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-%saveas(gcf,'Fig3_LandAreaChange.svg')
+saveas(gcf,'Fig3_LandAreaChange.svg')
 

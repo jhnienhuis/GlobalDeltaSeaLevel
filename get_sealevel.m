@@ -1,53 +1,15 @@
 function get_sealevel
 %% add slr to deltas, including projections and subsidence
 out = load(['D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat'],'MouthLon','MouthLat','BasinID2','delta_name');
-%out.MouthLon(out.MouthLon>180) = out.MouthLon(out.MouthLon>180)-360;
 CoorImDelta = out.MouthLat + 1i*out.MouthLon;
 ff = 'D:\OneDrive - Universiteit Utrecht\SeaLevelRise\';
 
-%{ 
-subsidence (%m/yr) from erkens
-sub = ncread([ff 'subs_global2000-2014.nc'],'subsidence');
-sub = (sub(:,:,end)-sub(:,:,1))./14; %m/yr
-sub = sub([2161:end 1:2160],end:-1:1);
-lat = flipud(ncread([ff 'subs_global2000-2014.nc'],'lat'));
-lon = ncread([ff 'subs_global2000-2014.nc'],'lon');
-lon = lon([2161:end 1:2160]);
-
-subfilt = sub;
-
-%add a few for which there is no subsidence(?!)
-idx = [2824,5405]; %miss
-subidx = [1e-2,4e-3];
-idx = sub2ind(size(sub),max(1,round(out.MouthLon(idx)*12)),round((90+out.MouthLat(idx))*12));
-subfilt(idx) = subidx;
-
-subfilt(subfilt<1e-6) = nan;
-subfilt = nanconv(subfilt,ones(5)./25,'same');
-subfilt(isnan(subfilt)) = 0;
-
-out.DeltaSub = subfilt(sub2ind(size(subfilt),max(1,round(out.MouthLon*12)),round((90+out.MouthLat)*12)));
-
-out.DeltaSub([233,5390,4717,4789,6302,6473,2798,6598,5828,2681,3646,4397]) = [4e-3,1e-3,0.0028,0.001,0.032,1e-3,2e-3,1e-2,5e-3,1e-3,2e-3,5e-3];
-%}
-
+%subsidence
 load([ff 'Fig3_data_GPS_Subsidence.mat'],'Fig3_data');
 sub2 = max(-10,min(10,Fig3_data(:,5)))./1000;
 %scatter(Fig3_data(:,1),Fig3_data(:,2),30,sub2,'filled')
 CoorImSub = Fig3_data(:,2)+1i*(mod(Fig3_data(:,1)-1,360)+1);
-
-%{
-wr = abs(CoorImSub-rot90(CoorImDelta))<2;
-out.DeltaSub = zeros(size(out.MouthLon));
-for ii=1:length(CoorImDelta),
-    if any(wr(:,ii)),
-        out.DeltaSub(ii) = mean(-sub2(wr(:,ii)));
-    else, 
-        out.DeltaSub(ii) = 0;
-    end
-end
-%}
-
+%find closest gps data for each delta
 [b,idx] = min(abs(CoorImSub-rot90(CoorImDelta)));
 
 out.DeltaSub = -sub2(idx);
@@ -91,11 +53,6 @@ blub = V*pinv(V)*reshape(blub,s(1),[]);
 blub = reshape(blub,s);
 slr = ((blub(2,:)-blub(1,:))*12/1e3)'; %change to m/yr
 
-%add hudson bay -10mm/yr and caspian sea = 2mm/yr (1985-2015)
-%(https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2017GL073958)
-%slr(end+(1:2)) = [-0.01 0.002];
-%SLR.LRec(end+(1:2),:) = [-85 60;51 41];
-
 CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1)-1,360)+1);
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
@@ -111,21 +68,6 @@ f = (['SROCC\rsl_ts_45.nc']); %http://icdc.cen.uni-hamburg.de/las/
 [out.DeltaSLR_RCP45_2100,out.DeltaSLR_RCP45_tot,out.DeltaSLR_RCP45_low,out.DeltaSLR_RCP45_high,out.DeltaSLR_RCP45_series] = get_slr_from_source(ff,f,CoorImDelta);
 f = (['SROCC\rsl_ts_85.nc']); %http://icdc.cen.uni-hamburg.de/las/
 [out.DeltaSLR_RCP85_2100,out.DeltaSLR_RCP85_tot,out.DeltaSLR_RCP85_low,out.DeltaSLR_RCP85_high,out.DeltaSLR_RCP85_series] = get_slr_from_source(ff,f,CoorImDelta);
-
-%{
-a = tight_subplot(1,3,0.05); 
-edges = [-1e-2:5e-4:2e-2];
-histogram(a(1),DeltaSub,edges), title(a(1),'Subsidence 2000-2014')
-histogram(a(2),DeltaSLR,edges), title(a(2),'SLR Observations 1950-2012')
-histogram(a(3),out.DeltaSLR_RCP26_2100,edges,'FaceColor','r'), hold on,
-histogram(a(3),out.DeltaSLR_RCP45_2100,edges,'FaceColor','g'), 
-histogram(a(3),out.DeltaSLR_RCP85_2100,edges,'FaceColor','b'), title(a(3),'SLR Projections 2090-2100')
-legend('RCP 26','RCP 45','RCP 85')
-arrayfun(@(x) (box(x,'on')),a)
-arrayfun(@(x) (xlim(x,[-1.5e-2,+2e-2])),a)
-arrayfun(@(x) (ylim(x,[0 6000])),a)
-xlabel(a(1),'Rate (mm/yr)'),xlabel(a(2),'Rate (mm/yr)'),xlabel(a(3),'Rate (mm/yr)')
-%}
 
 %example timeseries
 
@@ -185,8 +127,9 @@ SLR_2100 = SLR_2100(idx)';
 SLR_tot = SLR_tot(idx)';
 SLR_low = SLR_low(idx)';
 SLR_high = SLR_high(idx)';
+gia = gia(idx);
 
-SLR_series = diff(SLRraw(:,idx),1,1)';
+SLR_series = diff(SLRraw(:,idx),1,1)'-repmat(gia',1,length(SLR_time)-1);
 SLR_time(end) = [];
 
 end
