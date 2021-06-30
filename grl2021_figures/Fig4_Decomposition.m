@@ -1,9 +1,9 @@
 % bar plot linear decomposition of forcings (subsidence, dams, SLR)
 clr
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QRiver_prist','delta_name','MouthLon','MouthLat','BasinID2','shelf_depth','Discharge_prist');
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile.mat')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData.mat')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelResponse.mat','idx')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.mat')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse.mat','idx')
 addpath('D:\Dropbox\github\GlobalDeltaSeaLevel\')
 
 %idx mrd = 233 %rhine=3646 %mekong=5390 %volta=967 %nile 1168 %mahakam 6089, ganges = 4717

@@ -1,6 +1,6 @@
 function get_deltaresponse
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelData')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaProfile','s','r','w','bed_h')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','s','r','w','bed_h')
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist');
 
 %yearly end-of-century SLR
@@ -56,11 +56,11 @@ end
 
 
 
-save('D:\Dropbox\github\GlobalDeltaSeaLevel\GlobalDeltaSeaLevelResponse','-struct','out')
+save('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse','-struct','out')
 
 out.idx = double(out.idx);
 
 %also save netcdf
 funits = [{' '},repmat({'m2/yr'},1,14)];
 fmeta = [{'included deltas'},repmat({'Land Area Change prediction per delta','Land area change standard deviation (from Monte Carlo-assessment)'},1,7)];
-create_netcdf('GlobalDeltaSeaLevelResponse.nc',out,funits,fmeta)
+create_netcdf('export_data\GlobalDeltaSeaLevelResponse.nc',out,funits,fmeta)
