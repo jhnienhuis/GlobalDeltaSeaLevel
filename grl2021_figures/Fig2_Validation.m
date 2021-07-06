@@ -44,4 +44,4 @@ RMSE = sqrt(mean((land_obs(idx)-land_pred(idx)).^2))./1e6;
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-saveas(gcf,'Fig2_Validation.svg')
+%saveas(gcf,'Fig2_Validation.svg')
