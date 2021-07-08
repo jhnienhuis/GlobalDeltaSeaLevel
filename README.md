@@ -2,7 +2,7 @@
 Model predictions of global delta land area response to sea-level rise
 
 This github repository contains code and datafiles to reproduce findings published in:
-Nienhuis & van de Wal, GRL 2021
+Nienhuis, J.H., & van de Wal, R.S.W. (2021). Projections of global delta land loss from sea-level rise in the 21st century. Geophysical Research Letters, 48, e2021GL093368. https://doi.org/10.1029/2021GL093368
 
 ## get_sealevel.m
 loads data from 
