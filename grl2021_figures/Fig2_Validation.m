@@ -1,19 +1,18 @@
 clr
-load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QWave','QTide','QRiver_prist','delta_name','MouthLon','MouthLat','BasinID2','shelf_depth','Discharge_prist','depth_upstream');
+load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','QWave','QTide','QRiver_prist','delta_name','MouthLon','MouthLat','BasinID2','shelf_depth','Discharge_prist','depth_upstream','Hs','depth_mouth');
 ee = load('D:\Dropbox\github\GlobalDeltaChange\land_area_change\GlobalDeltaData_AreaChange.mat');
 load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.mat','DeltaSLR','DeltaSub')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat','bed_h','s','r','w','delta_area')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.mat','bed_h','s','r')
+load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaArea.mat','w','delta_area')
 addpath('D:\Dropbox\github\GlobalDeltaSeaLevel\')
 addpath('D:\Dropbox\github\GlobalDeltaChange\')
-
-
 
 land_obs = mean([ee.net_pekel ee.net_aqua],2).*1e6;
 
 
 fr=1;
 
-[land_pred,idx] = get_deltachange(365*24*3600*QRiver_dist./1600,DeltaSLR+DeltaSub,s,r,w,bed_h,fr);
+[land_pred,idx] = func_delta_areachange(365*24*3600*QRiver_dist./1600,DeltaSLR+DeltaSub,s,r,w,bed_h,fr);
 
 %remove caspian sea
 idx= idx & ~(MouthLon>46 & MouthLon<56 & MouthLat>34 & MouthLat<48);
