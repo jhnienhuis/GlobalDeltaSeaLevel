@@ -21,3 +21,11 @@ T = table(delta_name(idx),int64(BasinID2(idx)),MouthLat(idx),MouthLon(idx),Delta
 'VariableNames',{'Delta Name','BasinID2','Latitude','Longitude','SLR_1985_2015 (m/yr)','VLM (m/yr, positive is subsidence)','SLR_2081_2100_RCP26 (m/yr)','SLR_2081_2100_RCP45 (m/yr)','SLR_2081_2100_RCP85 (m/yr)','DeltaChange_1985_2015_obs (m2/yr, positive is land gain)','DeltaChange_1985_2015_model (m2/yr, positive is land gain)','DeltaChange_2081_2100_RCP26 (m2/yr, positive is land gain)','DeltaChange_2081_2100_RCP45 (m2/yr, positive is land gain)','DeltaChange_2081_2100_RCP85 (m2/yr, positive is land gain)'});
 
 writetable(T,'GlobalDeltaSeaLevel_max100.xls');
+
+load('D:\Drive\github\GlobalDeltaChange\GlobalDeltaData.mat','delta_name');
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaArea.mat')
+
+T = table(delta_name,int64(BasinID2),delta_area,...
+'VariableNames',{'Delta Name','BasinID2','Delta Area (m2)'});
+
+writetable(T,'GlobalDeltaArea.xls');
