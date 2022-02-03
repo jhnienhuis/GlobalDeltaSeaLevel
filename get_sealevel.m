@@ -15,6 +15,10 @@ CoorImSub = Fig3_data(:,2)+1i*(mod(Fig3_data(:,1)-1,360)+1);
 out.DeltaSub = -sub2(idx);
 out.DeltaSub(b>1) = 0; %don't include subsidence data where distance to station >1
 
+%subtract GIA from GPS rates (GIA from sea-level reconstructions is likely to be better)
+gia = ncread([ff 'SROCC\gia_mean.nc'],'rslrate'); %subtract GIA because it is in the VLM dataset
+gia = gia(sub2ind(size(gia),floor(out.MouthLon),round(90+out.MouthLat)));
+out.DeltaSub(b<1) = out.DeltaSub(b<1)-gia(b<1);
 
 %{
 %slr minus gia from past 50 years.
@@ -45,8 +49,8 @@ out.DeltaSLR = slrsmooth(sub2ind(size(slrsmooth),max(1,round(out.MouthLon)),roun
 out.DeltaSLR = out.DeltaSLR(idx);
 %}
 
-SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'REC','LRec','tTG');
-blub = permute(SLR.REC(:,1020:end),[2 1]); %get 1985-2015
+SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'RECwithGIA','LRec','tTG');
+blub = permute(SLR.RECwithGIA(:,1020:end),[2 1]); %get 1985-2015
 s = size(blub);
 V = bsxfun(@power,(1:s(1))',0:1);
 blub = V*pinv(V)*reshape(blub,s(1),[]);
@@ -56,9 +60,8 @@ slr = ((blub(2,:)-blub(1,:))*12/1e3)'; %change to m/yr
 CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1)-1,360)+1);
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
-out.DeltaSLR = slr(idx);
-
-out.DeltaSLR_series(1:length(idx),2:(length(SLR.tTG)/12)) = diff(SLR.REC(idx,1:12:end),1,2)/1e3;
+out.DeltaSLR = slr(idx)+gia;
+out.DeltaSLR_series(1:length(idx),2:(length(SLR.tTG)/12)) = diff(SLR.RECwithGIA(idx,1:12:end),1,2)/1e3+gia;
 out.DeltaSLR_time = SLR.tTG(1:12:end)';
 
 
@@ -104,7 +107,7 @@ create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaL
 end
 function [SLR_2100,SLR_tot,SLR_low,SLR_high,SLR_series,SLR_time] = get_slr_from_source(ff,f,CoorImDelta)
 
-gia = ncread([ff 'SROCC\gia_mean.nc'],'rslrate'); %subtract GIA because it is in the VLM dataset
+%gia = ncread([ff 'SROCC\gia_mean.nc'],'rslrate'); %subtract GIA because it is in the VLM dataset
 
 SLRraw = permute(double(ncread([ff f],'slr_md')),[3 1 2]); %m
 SLRraw_high = permute(double(ncread([ff f],'slr_he')),[3 1 2]); %m slr
@@ -113,8 +116,8 @@ SLR_time = ncread([ff f],'time')';
 
 [Y,X] = meshgrid(ncread([ff f],'y'),ncread([ff f],'x'));
 
-SLR_2100 = squeeze((SLRraw(end,:,:)-SLRraw(end-19,:,:))./19)-gia; %m/yr
-SLR_tot = squeeze((SLRraw(end,:,:)-SLRraw(1,:,:))./length(SLR_time))-gia; %m/yr
+SLR_2100 = squeeze((SLRraw(end,:,:)-SLRraw(end-19,:,:))./19); %m/yr
+SLR_tot = squeeze((SLRraw(end,:,:)-SLRraw(1,:,:))./length(SLR_time)); %m/yr
 SLR_high = squeeze((SLRraw_high(end,:,:)-SLRraw_high(1,:,:)))./length(SLR_time);
 SLR_low = squeeze((SLRraw_low(end,:,:)-SLRraw_low(1,:,:)))./length(SLR_time);
 
@@ -123,13 +126,13 @@ CoorImSLR = Y(ind_sea)+1i.*X(ind_sea);
 
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
 
-SLR_2100 = SLR_2100(idx)';
-SLR_tot = SLR_tot(idx)';
-SLR_low = SLR_low(idx)';
-SLR_high = SLR_high(idx)';
-gia = gia(idx);
+SLR_2100 = SLR_2100(ind_sea(idx));
+SLR_tot = SLR_tot(ind_sea(idx));
+SLR_low = SLR_low(ind_sea(idx));
+SLR_high = SLR_high(ind_sea(idx));
+%gia = gia(ind_sea(idx));
 
-SLR_series = diff(SLRraw(:,idx),1,1)'-repmat(gia',1,length(SLR_time)-1);
+SLR_series = diff(SLRraw(:,ind_sea(idx)),1,1)'; %-repmat(gia,1,length(SLR_time)-1)
 SLR_time(end) = [];
 
 end

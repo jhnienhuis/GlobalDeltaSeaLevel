@@ -52,7 +52,9 @@ else, %sedimentary wedge; get river delta values
     bed_h = min(-1,mean([sl(1,ii),(l_h(ii)-(l_x(ii)*(l_delta(1)*2*l_x(ii)+l_delta(2))))]));
     alpha = l_delta(2);
     s = max(1,min(l_x(ii),-bed_h/beta));
-    r = min(0,-l_x(ii)+s);    
+    r = min(0,-l_x(ii)+s);
+    if r==0 && x_nan==30, r=-s; end %didn't find end of delta, assume big delta (yellow fix)
+        
     psi = -(fliplr(shelf_x)'\fliplr(shelf_h)');
     %height of alluvial bedrock transition
     r_h = l_h(ii+1);
