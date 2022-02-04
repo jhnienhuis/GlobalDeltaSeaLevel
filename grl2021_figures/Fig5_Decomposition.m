@@ -47,4 +47,4 @@ title('Relative contribution of SLR and sediment on global delta land gain')
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-saveas(gcf,'Fig4_Decomposition.svg')
+saveas(gcf,'Fig5_Decomposition.svg')
