@@ -24,7 +24,8 @@ Subsc = {'zeros(size(w))','zeros(size(w))','zeros(size(w))','DeltaSub','zeros(si
 for ii=1:12,
     SLRpred(ii) = nansum(func_delta_areachange(365*24*3600*eval(Qsc{ii})./1600,eval(Slrsc{ii})+eval(Subsc{ii}),s,r,w,bed_h,0.9).*idx);
 
-    SLRpred_unc(ii) = nansum(std(func_delta_areachange_montecarlo(eval(Qsc{ii}),eval(Slrsc{ii}),eval(Subsc{ii}),eval(Slrunsc{ii}),s,r,w,bed_h),1,2).*idx)./sqrt(sum(idx));
+    blub(ii,:) = func_delta_areachange(365*24*3600*eval(Qsc{ii})./1600,eval(Slrsc{ii})+eval(Subsc{ii}),s,r,w,bed_h,0.9).*idx;
+    %SLRpred_unc(ii) = nansum(std(func_delta_areachange_montecarlo(eval(Qsc{ii}),eval(Slrsc{ii}),eval(Subsc{ii}),eval(Slrunsc{ii}),s,r,w,bed_h),1,2).*idx)./sqrt(sum(idx));
     
 end
 % figure
@@ -47,4 +48,4 @@ title('Relative contribution of SLR and sediment on global delta land gain')
 
 set(gcf, 'Units', 'Centimeters', 'OuterPosition', [0, 0, 18.3, 10]);
 set(gca, 'FontSize', 8,'FontName','Helvetica')
-saveas(gcf,'Fig5_Decomposition.svg')
+%saveas(gcf,'Fig5_Decomposition.svg')

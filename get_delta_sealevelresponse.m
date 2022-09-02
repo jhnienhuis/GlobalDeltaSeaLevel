@@ -1,8 +1,8 @@
 function get_delta_sealevelresponse
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','s','r','bed_h')
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaArea.mat','w','delta_area')
-load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','depth_upstream','Hs');
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData')
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','s','r','bed_h')
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaArea.mat','w','delta_area')
+load('D:\Drive\github\GlobalDeltaChange\GlobalDeltaData.mat','QRiver_dist','depth_upstream','Hs');
 
 %yearly end-of-century SLR
 slr_scenarios = {'DeltaSLR','DeltaSLR_RCP26_2100','DeltaSLR_RCP45_2100','DeltaSLR_RCP85_2100'};
@@ -56,7 +56,7 @@ end
 
 
 
-save('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse','-struct','out')
+save('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelResponse','-struct','out')
 
 out.idx = double(out.idx);
 
