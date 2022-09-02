@@ -1,7 +1,7 @@
 load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','MouthLon','MouthLat','BasinID2');
 
 
-t = [0 2 4 6 9 13 17 21]';
+t = [0 2 4 6 9 13 17 21]' ;
 SLt = zeros(length(MouthLon),length(t));
 SDt = zeros(length(MouthLon),length(t));
 f = ['D:\OneDrive - Universiteit Utrecht\SeaLevelRise\holoceneSL\']; %ice5g from Milne, Mitrovica
