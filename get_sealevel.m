@@ -49,7 +49,7 @@ out.DeltaSub(b>1) = gia(b>1); %don't include subsidence data where distance to s
 out.GIA = gia;
 
 %% 20th century SL
-SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'REC','LRec','tTG');
+SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'RECwithGIA','LRec','tTG');
 blub = permute(SLR.REC(:,1:end),[2 1]);
 s = size(blub);
 V = bsxfun(@power,(1:s(1))',0:1);
@@ -59,6 +59,7 @@ slr = ((blub(2,:)-blub(1,:))*12/1e3)'; %change to m/yr
 
 CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1)-1,360)+1);
 [~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
+
 
 
 out.DeltaSLR = slr(idx);
@@ -76,7 +77,7 @@ f = (['SROCC\rsl_ts_85.nc']); %http://icdc.cen.uni-hamburg.de/las/
 [out.DeltaSLR_RCP85_2100,out.DeltaSLR_RCP85_tot,out.DeltaSLR_RCP85_low,out.DeltaSLR_RCP85_high,out.DeltaSLR_RCP85_series] = get_slr_from_source(ff,f,CoorImDelta);
 
 %add slangen timeseries up to 2300
-[out.DeltaSLR_SSPt,out.DeltaSLR_SSP126,out.DeltaSLR_SSP245,out.DeltaSLR_SSP585] = get_ar6_from_source(out.MouthLat,out.MouthLon);
+[out.DeltaSLR_SSPt,out.DeltaSLR_SSP126,out.DeltaSLR_SSP245,out.DeltaSLR_SSP585,out.DeltaSL_SSP126,out.DeltaSL_SSP245,out.DeltaSL_SSP585] = get_ar6_from_source(out.MouthLat,out.MouthLon);
 
 
 %plot(out.DeltaSLR_time,cumsum(-out.DeltaSLR_series(10000,:),2,'reverse'))
@@ -118,6 +119,42 @@ fmeta = {'Delta location','Delta location','Basin ID2 from hydrosheds',...
 out = rmfield(out,'delta_name');
 create_netcdf('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData.nc',out,funits,fmeta)
 
+%% save data file for arcgis web
+out = load(['D:\Drive\github\GlobalDeltaChange\GlobalDeltaData.mat'],'MouthLon','MouthLat','BasinID2','delta_name');
+CoorImDelta = out.MouthLat + 1i*out.MouthLon;
+ff = 'D:\OneDrive - Universiteit Utrecht\SeaLevelRise\';
+%historic slr
+SLR = load([ff 'HR_Reconstruction_1900-2015.mat'],'RECwithGIA','LRec','tTG');
+CoorImSLR = SLR.LRec(:,2)+1i*(mod(SLR.LRec(:,1)-1,360)+1);
+[~,idx] = min(abs(CoorImSLR-rot90(CoorImDelta)));
+DeltaSL_time = [1900 1950 2000];
+DeltaSL = [mean(SLR.RECwithGIA(idx,1:12),2) mean(SLR.RECwithGIA(idx,596:606),2) mean(SLR.RECwithGIA(idx,1196:1206),2)]./1000; %sl wrt 2000
+DeltaSL = DeltaSL-DeltaSL(:,end);
+
+%future slr
+load('D:\Drive\github\GlobalDeltaChange\pub_figures\annualreviews2023\gridded-SL-IPCC-AR6')
+
+lon_grid = mod(lon_grid,360);
+
+lon_grid(361,:) = 360.*ones(size(lon_grid(1,:)));
+lat_grid(361,:) = lat_grid(1,:);
+
+k = dsearchn([lon_grid(:),lat_grid(:)],[mod(out.MouthLon,360) out.MouthLat]); 
+
+DeltaSL_SSP126 = permute(cat(3,SL_126LC_2050_50, SL_126LC_2100_50, (SL_126LC_2100_50+SL_126LC_2200_50)/2, SL_126LC_2200_50, (SL_126LC_2200_50+SL_126LC_2300_50)/2, SL_126LC_2300_50),[3 1 2]);
+DeltaSL_SSP245 = permute(cat(3,SL_245LC_2050_50, SL_245LC_2100_50, (SL_245LC_2100_50+SL_245LC_2200_50)/2, SL_245LC_2200_50, (SL_245LC_2200_50+SL_245LC_2300_50)/2, SL_245LC_2300_50),[3 1 2]);
+DeltaSL_SSP585 = permute(cat(3,SL_585LC_2050_50, SL_585LC_2100_50, (SL_585LC_2100_50+SL_585LC_2200_50)/2, SL_585LC_2200_50, (SL_585LC_2200_50+SL_585LC_2300_50)/2, SL_585LC_2300_50),[3 1 2]);
+
+
+[DeltaSL_SSP126(:,361,:),DeltaSL_SSP245(:,361,:),DeltaSL_SSP585(:,361,:)] = deal(DeltaSL_SSP126(:,1,:),DeltaSL_SSP245(:,1,:),DeltaSL_SSP585(:,1,:));
+
+[DeltaSL_SSP126,DeltaSL_SSP245,DeltaSL_SSP585] = deal((DeltaSL_SSP126(:,k)/1000)',(DeltaSL_SSP245(:,k)/1000)',(DeltaSL_SSP585(:,k)/1000)');
+
+t2 = [2050 2100 2150 2200 2250 2300];
+
+save('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelData_Web','DeltaSL_time','DeltaSL','t2','DeltaSL_SSP126','DeltaSL_SSP245','DeltaSL_SSP585');
+
+
 end
 
 function [SLR_2100,SLR_tot,SLR_low,SLR_high,SLR_series,SLR_time] = get_slr_from_source(ff,f,CoorImDelta)
@@ -153,12 +190,12 @@ SLR_time(end) = [];
 end
 
 
-function [t, DeltaSLR_SSP126,DeltaSLR_SSP245,DeltaSLR_SSP585] = get_ar6_from_source(lat,lon)
+function [t, DeltaSLR_SSP126,DeltaSLR_SSP245,DeltaSLR_SSP585,DeltaSL_SSP126,DeltaSL_SSP245,DeltaSL_SSP585] = get_ar6_from_source(lat,lon)
 
 %lat = out.MouthLat;
 lon = mod(lon,360);
 
-load('D:\Drive\2022 DeltaSLR_AnnualRev\Data\gridded-SL-IPCC-AR6.mat')
+load('D:\Drive\github\GlobalDeltaChange\pub_figures\annualreviews2023\gridded-SL-IPCC-AR6')
 
 lon_grid = mod(lon_grid,360);
 
@@ -180,6 +217,10 @@ DeltaSLR_SSP585(:,361,:) = DeltaSLR_SSP585(:,1,:);
 DeltaSLR_SSP126 = (DeltaSLR_SSP126(:,k)./[45.5; 50; 100; 100]/1000)';
 DeltaSLR_SSP245 = (DeltaSLR_SSP245(:,k)./[45.5; 50; 100; 100]/1000)';
 DeltaSLR_SSP585 = (DeltaSLR_SSP585(:,k)./[45.5; 50; 100; 100]/1000)';
+
+
+
+
 
 
 end
