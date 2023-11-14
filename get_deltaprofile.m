@@ -1,7 +1,7 @@
 function get_deltaprofile
-load('D:\Dropbox\github\GlobalDeltaChange\GlobalDeltaData.mat','channel_len','shelf_len','shelf_lines','BasinID2','Hs','depth_mouth');
-
-load('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelHolocene','BasinID2','SLt');
+load('D:\Drive\github\GlobalDeltaChange\GlobalDeltaData.mat','channel_len','shelf_len','shelf_lines','BasinID2','Hs','depth_mouth','channel_slope');
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaArea.mat','delta_area')
+load('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaSeaLevelHolocene','BasinID2','SLt');
 
 SL_LGM = SLt(:,end);
 
@@ -23,31 +23,32 @@ end
 
 %set sedimentary depth of delta wedge to be at least the channel depth
 bed_h = double(-max(min(50,depth_mouth),10.*Hs));
+r_h(isnan(r_h)) = 0;
+r_h(r_h==0) = 5000.*alpha(r_h==0); %assume a minimum of 5km
 
 %three factors: beta, length, area
 
 %get data from edmonds et al., 2020
-[ed_ID2,~,~,ed_length] = get_edmonds_data(BasinID2);
+%[ed_ID2,~,~,ed_length] = get_edmonds_data(BasinID2);
 
 %beta, check against blum&tornqvist
-bt_ID2 = [4346011,4165211,2098785,4301321,1248635,4267691];
-[~,bt_xx] = ismember(bt_ID2,BasinID2);
-bt_beta = [50,20,130,80,25,15].*1e-2./1e3;
+%bt_ID2 = [4346011,4165211,2098785,4301321,1248635,4267691];
+%[~,bt_xx] = ismember(bt_ID2,BasinID2);
+%bt_beta = [50,20,130,80,25,15].*1e-2./1e3;
 %scatter(bt_beta,beta(bt_xx)),axis equal,ylim([0 inf]),xlim([0 inf])
 
 %length, check against blum&tornqvist and edmonds
-bt_length = [40,90,100,90,150,350].*1e3;
-
-[~,ed_xx] = ismember(ed_ID2,BasinID2);
+%bt_length = [40,90,100,90,150,350].*1e3;
+%[~,ed_xx] = ismember(ed_ID2,BasinID2);
 %scatter(ed_length,s(ed_xx)),axis equal,ylim([0 inf]),xlim([0 inf]),
 %set(gca,'xscale','log'),set(gca,'yscale','log')
 
 %then use these values also
-s(ed_xx) = ed_length;
-beta(bt_xx) = bt_beta;
+%s(ed_xx) = ed_length;
+%beta(bt_xx) = bt_beta;
 %have calibrated values and they seem more or less fine. 
 
-save('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','r','s','beta','alpha','bed_h','r_h');
+save('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile','r','s','beta','alpha','bed_h','r_h');
 
 %also save netcdf
 out = struct('BasinID2',BasinID2,'alpha', alpha,'beta', beta,'r', r ,'s', s,'bed_h', bed_h,'r_h',r_h);
@@ -55,7 +56,7 @@ out = struct('BasinID2',BasinID2,'alpha', alpha,'beta', beta,'r', r ,'s', s,'bed
 funits = {'','m','m','m','m','m','m'};
 fmeta = {'BasinID2','delta surface slope at river mouth', 'Delta basement slope','Distance from delta center to alluvial-basement transition',...
     'Distance from delta center to the shoreline','basement depth at shoreline','elevation at alluvial-basement transition'};
-create_netcdf('D:\Dropbox\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.nc',out,funits,fmeta)
+create_netcdf('D:\Drive\github\GlobalDeltaSeaLevel\export_data\GlobalDeltaProfile.nc',out,funits,fmeta)
 
 
 

@@ -1,10 +1,13 @@
 function [ed_BasinID2,ed_area,ed_width,ed_length,ed_mouth_latlon,ed_apex_latlon,ed_sho1_latlon,ed_sho2_latlon,ed_apex_ele] = get_edmonds_data(BasinID2,get_elevation)
 
 data = xlsread('Edmondsetal2020_NatCom_suppdata.xlsx','B2:K2177');
-
+ed_area = xlsread('Edmondsetal2020_NatCom_suppdata.xlsx','Q2:Q2177').*1e6; %area in m2
 ed_BasinID2 = xlsread('Edmondsetal2020_NatCom_suppdata.xlsx','AF2:AF2177');
 
+ed_BasinID2(isnan(ed_area)) = 0;
+
 [~,idx] = ismember(ed_BasinID2,BasinID2);
+
 idx = find(idx);
 ed_BasinID2 = ed_BasinID2(idx);
 
@@ -12,11 +15,13 @@ if nargin==1,
     get_elevation=0;
 end
 
-ed_area = zeros(size(idx));
+%ed_area = zeros(size(idx));
+%for ii=1:length(idx)
+%ed_area(ii) = areaint([data(idx(ii),1) data(idx(ii),5) data(idx(ii),3) data(idx(ii),7)] ,[data(idx(ii),2) data(idx(ii),6) data(idx(ii),4) data(idx(ii),8)],referenceSphere('earth'));
+%end
 
-for ii=1:length(idx)
-ed_area(ii) = areaint([data(idx(ii),1) data(idx(ii),5) data(idx(ii),3) data(idx(ii),7)] ,[data(idx(ii),2) data(idx(ii),6) data(idx(ii),4) data(idx(ii),8)],referenceSphere('earth'));
-end
+
+ed_area = ed_area(idx);
 
 ed_width = zeros(size(idx));
 for ii=1:length(idx)
@@ -32,10 +37,10 @@ ed_apex_latlon = data(idx,3:4);
 ed_sho1_latlon = data(idx,5:6);
 ed_sho2_latlon = data(idx,7:8);
 
-ed_mouth_latlon(:,2) = mod(ed_mouth_latlon(:,2)-1,360)+1;
-ed_apex_latlon(:,2) = mod(ed_apex_latlon(:,2)-1,360)+1;
-ed_sho1_latlon(:,2) = mod(ed_sho1_latlon(:,2)-1,360)+1;
-ed_sho2_latlon(:,2) = mod(ed_sho2_latlon(:,2)-1,360)+1;
+%ed_mouth_latlon(:,2) = mod(ed_mouth_latlon(:,2)-1,360)+1;
+%ed_apex_latlon(:,2) = mod(ed_apex_latlon(:,2)-1,360)+1;
+%ed_sho1_latlon(:,2) = mod(ed_sho1_latlon(:,2)-1,360)+1;
+%ed_sho2_latlon(:,2) = mod(ed_sho2_latlon(:,2)-1,360)+1;
 
 
 if get_elevation,
